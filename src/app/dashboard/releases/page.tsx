@@ -17,9 +17,9 @@ interface ReleaseNote {
     fixes: number;
     improvements: number;
     docs: number;
+    subject?: string; // Subject stored in entries JSONB
   };
   email_copy: string;
-  subject: string;
   sent_at: string | null;
   created_at: string;
 }
@@ -231,24 +231,26 @@ export default function ReleasesPage() {
           </div>
 
           {/* Subject Line */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Email Subject</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(releaseNote.subject, 'Subject')}
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-medium">{releaseNote.subject}</p>
-            </CardContent>
-          </Card>
+          {releaseNote.entries.subject && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Email Subject</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard(releaseNote.entries.subject!, 'Subject')}
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg font-medium">{releaseNote.entries.subject}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Email Copy */}
           <Card>

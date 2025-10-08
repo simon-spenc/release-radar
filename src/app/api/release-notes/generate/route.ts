@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Generate release notes with LLM
     const { emailCopy, subject } = await generateReleaseNotes(llmRequest);
 
-    // Save to database
+    // Save to database (subject field will be added to schema separately)
     const { data: savedNote, error: saveError } = await supabaseAdmin
       .from('release_notes')
       .upsert(
@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
             improvements: categorized.improvements.length,
             docs: categorized.docs.length,
             categorized,
+            subject, // Store subject in entries JSONB for now
           },
           email_copy: emailCopy,
-          subject,
         },
         {
           onConflict: 'week_starting',
@@ -89,7 +89,13 @@ export async function POST(request: NextRequest) {
 
     if (saveError) {
       console.error('Error saving release notes:', saveError);
-      // Don't fail the request, just log it
+      return NextResponse.json(
+        {
+          error: 'Failed to save release notes',
+          details: saveError.message,
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
