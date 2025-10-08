@@ -30,6 +30,18 @@ release-radar/
 └── package.json
 ```
 
+## Features
+
+- 🤖 **AI-Powered Summaries** - Automatically generate user-friendly summaries of PRs and tickets using Claude or GPT-4
+- 📋 **Approval Dashboard** - Review, edit, and approve summaries before publishing
+- 🔔 **Webhook Integration** - Real-time processing of GitHub PRs and Linear tickets
+- 📊 **Release Notes** - Automated weekly release notes generation
+- 🔒 **Secure** - Webhook signature verification and environment-based configuration
+
+## Live Demo
+
+Check out the live deployment: [https://release-radar.vercel.app](https://release-radar.vercel.app)
+
 ## Getting Started
 
 ### Prerequisites
@@ -103,22 +115,24 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 See `planning.md` for detailed implementation phases and features.
 
-### Current Status: Phase 1 - Foundation ✅
+### Current Status: Phase 2.5 - LLM Integration ✅
 
 - [x] Next.js project setup with TypeScript
-- [x] Supabase configuration
-- [x] Database schema
-- [x] Basic API routes structure
-- [x] TypeScript types and interfaces
-- [ ] Complete webhook processing logic
-- [ ] LLM integration for summarization
+- [x] Supabase configuration and database schema
+- [x] GitHub and Linear webhook handlers
+- [x] LLM integration (Anthropic Claude)
+- [x] PR and ticket summarization
+- [x] Approval dashboard UI with shadcn/ui
+- [x] Retry logic and error handling
+- [x] MCP server integration
+- [x] **Deployed to Vercel** 🚀
 
-### Next Steps: Phase 2 - Core Features
+### Next Steps: Phase 3 - Documentation Automation
 
-- [ ] Build approval dashboard UI
-- [ ] Implement PR/ticket summarization
-- [ ] Create approval workflow
-- [ ] Test webhook → LLM → database flow
+- [ ] Automated documentation updates
+- [ ] GitHub PR creation for docs
+- [ ] Markdoc file modification
+- [ ] Doc PR merge tracking
 
 ## Available Scripts
 
