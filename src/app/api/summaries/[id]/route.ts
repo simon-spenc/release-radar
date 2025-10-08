@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import type { Database } from '@/types/database.generated';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
-
-type PRUpdate = Database['public']['Tables']['pr_summaries']['Update'];
-type TicketUpdate = Database['public']['Tables']['linear_tickets']['Update'];
 
 export async function PATCH(
   request: NextRequest,
@@ -28,10 +24,10 @@ export async function PATCH(
     let data, error;
 
     if (type === 'pr') {
-      const updateData: PRUpdate = {};
+      const updateData: any = {};
 
       if (status) {
-        updateData.status = status as 'pending' | 'approved' | 'rejected';
+        updateData.status = status;
         if (status === 'approved') {
           updateData.approved_at = new Date().toISOString();
           updateData.approved_by = approved_by || 'unknown';
@@ -44,17 +40,17 @@ export async function PATCH(
 
       const result = await supabaseAdmin
         .from('pr_summaries')
-        .update(updateData as any)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
       data = result.data;
       error = result.error;
     } else {
-      const updateData: TicketUpdate = {};
+      const updateData: any = {};
 
       if (status) {
-        updateData.status = status as 'pending' | 'approved' | 'rejected';
+        updateData.status = status;
         if (status === 'approved') {
           updateData.approved_at = new Date().toISOString();
           updateData.approved_by = approved_by || 'unknown';
@@ -67,7 +63,7 @@ export async function PATCH(
 
       const result = await supabaseAdmin
         .from('linear_tickets')
-        .update(updateData as any)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

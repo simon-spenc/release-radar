@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 // Server-side client with service role key for admin operations
-export const supabaseAdmin = createClient<Database>(
+export const supabaseAdmin = createClient(
   supabaseUrl,
   supabaseServiceKey,
   {
