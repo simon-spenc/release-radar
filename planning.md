@@ -593,6 +593,88 @@ Integrate MCP to provide intelligent context and automation for the Release Rada
 
 ## Future Enhancements
 
+### Phase 6: UX & Visual Improvements
+- [ ] **Update Docs Button State Management**
+  - Grey out or mark "Update Docs" button as complete after doc PR is created
+  - Add visual indicator (checkmark, badge) showing doc update status
+  - Show doc PR link prominently with status badge
+  - Add "Completed" page/tab for items with merged doc PRs
+
+- [ ] **Complete UI Refactor with shadcn/ui**
+  - Replace all remaining custom components with shadcn/ui
+  - Implement custom layouts with proper spacing and hierarchy
+  - Add data-table component for advanced filtering/sorting
+  - Implement command palette (⌘K) for quick navigation
+  - Add calendar component for date filtering
+  - Responsive mobile design improvements
+  - Dark mode enhancements
+  - Loading skeletons for all async operations
+
+### Phase 7: Authentication & Authorization
+- [ ] **Google OAuth via Supabase Auth**
+  - Implement Supabase Auth with Google provider
+  - Create user profiles table
+  - Add role-based access control (RBAC)
+    - Admin: Full access
+    - Approver: Can approve/reject summaries
+    - Viewer: Read-only access
+  - Protect dashboard routes with auth middleware
+  - Add user menu with profile/logout
+  - Track who approved/rejected items (already have approved_by field)
+
+### Phase 8: Documentation Content Management
+- [ ] **CMS Integration for Marketing**
+  - Evaluate Tina CMS vs Decap CMS for docs editing
+  - Tina CMS (recommended):
+    - Real-time visual editing
+    - Git-backed content
+    - Custom fields for Markdoc frontmatter
+    - Preview mode
+  - Decap CMS (alternative):
+    - Open source
+    - Editorial workflow
+    - Media library
+  - Integrate chosen CMS with release-radar-docs repo
+  - Configure custom fields for doc metadata
+  - Set up preview templates
+
+- [ ] **Doc Content Preview & Editing**
+  - Preview markdown content before submitting to docs repo
+  - Side-by-side markdown editor with live preview
+  - Styled preview using docs site CSS
+  - Edit generated content in-app before creating PR
+  - Diff view showing before/after changes
+  - Approve/reject individual doc file changes
+  - Markdown toolbar for formatting assistance
+
+- [ ] **Enhanced Doc PR Links**
+  - Return direct links to changed content on docs site
+  - Show preview URLs for doc PR branches (Vercel/Netlify preview)
+  - Link to specific sections/headings that were modified
+  - Highlight changed sections in preview
+
+### Phase 9: Historical Data & Search
+- [ ] **GitHub PR & Linear Ticket Sync**
+  - Pull all historical PRs via GitHub API
+    - Paginate through repository PRs
+    - Store in database with metadata
+    - Sync on schedule (daily/weekly)
+  - Pull all historical Linear tickets via Linear API
+    - Query completed tickets
+    - Store in database
+    - Sync on schedule
+  - Add background job for syncing
+  - Handle rate limits and pagination
+
+- [ ] **Search & Filter Interface**
+  - Advanced search across all PRs and tickets
+  - Filters: date range, author, repository, status, category
+  - Full-text search in titles and descriptions
+  - Elasticsearch/Algolia integration for fast search
+  - Save search queries
+  - Export search results to CSV
+
+### Phase 10: Additional Features
 - [ ] Support for multiple repositories
 - [ ] AI-powered categorization (feature/fix/improvement)
 - [ ] Changelog generation from release notes
@@ -604,4 +686,3 @@ Integrate MCP to provide intelligent context and automation for the Release Rada
 - [ ] Rollback capability for doc changes
 - [ ] A/B testing for release note copy
 - [ ] Real-time collaboration on approvals
-- [ ] Mobile-responsive dashboard improvements
