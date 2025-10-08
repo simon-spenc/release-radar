@@ -116,10 +116,11 @@ async function processDocUpdate(params: ProcessDocUpdateParams): Promise<DocUpda
   // 2. Get default branch SHA
   const defaultBranchSHA = await getDefaultBranchSHA(DOCS_REPO_OWNER, DOCS_REPO_NAME);
 
-  // 3. Create a new branch
+  // 3. Create a new branch with unique timestamp to avoid conflicts
+  const timestamp = Date.now();
   const branchName = prNumber
-    ? `docs-update-pr-${prNumber}`
-    : `docs-update-${sourceType}-${Date.now()}`;
+    ? `docs-update-pr-${prNumber}-${timestamp}`
+    : `docs-update-${sourceType}-${timestamp}`;
 
   await createBranch(DOCS_REPO_OWNER, DOCS_REPO_NAME, branchName, defaultBranchSHA);
 
