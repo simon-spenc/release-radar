@@ -18,7 +18,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload: GitHubPRWebhook = JSON.parse(body);
+    // Parse payload - handle both JSON and URL-encoded formats
+    let payload: GitHubPRWebhook;
+    const contentType = request.headers.get('content-type') || '';
+
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      // GitHub sends URL-encoded data with a 'payload' field
+      const params = new URLSearchParams(body);
+      const payloadStr = params.get('payload');
+      if (!payloadStr) {
+        throw new Error('No payload field in URL-encoded body');
+      }
+      payload = JSON.parse(payloadStr);
+    } else {
+      // Standard JSON payload
+      payload = JSON.parse(body);
+    }
 
     // Only process merged PRs
     if (payload.action === 'closed' && payload.pull_request.merged_at) {

@@ -17,7 +17,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload: LinearWebhook = JSON.parse(body);
+    // Parse payload - handle both JSON and URL-encoded formats
+    let payload: LinearWebhook;
+    const contentType = request.headers.get('content-type') || '';
+
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      const params = new URLSearchParams(body);
+      const payloadStr = params.get('payload');
+      if (!payloadStr) {
+        throw new Error('No payload field in URL-encoded body');
+      }
+      payload = JSON.parse(payloadStr);
+    } else {
+      // Standard JSON payload
+      payload = JSON.parse(body);
+    }
 
     // Only process completed issues
     if (payload.type === 'Issue' && payload.data.completedAt) {
