@@ -26,6 +26,7 @@ export interface ReleaseEntry {
     ticket_url: string;
     llm_summary: string;
     edited_summary: string | null;
+    category?: 'feature' | 'fix' | 'improvement' | 'docs' | 'other';
   };
 }
 
@@ -133,6 +134,7 @@ export async function fetchReleaseEntriesForWeek(weekStart: string): Promise<Rel
         ticket_url: ticket.ticket_url,
         llm_summary: ticket.llm_summary,
         edited_summary: ticket.edited_summary,
+        category: ticket.category,
       },
     })));
   }
@@ -153,9 +155,10 @@ export function categorizeReleases(entries: ReleaseEntry[]): CategorizedReleases
   };
 
   entries.forEach((entry) => {
-    // Determine category from PR or default to 'other'
+    // Determine category from PR or Linear ticket, or default to 'other'
     let category: keyof CategorizedReleases = 'other';
 
+    // Check PR category first
     if (entry.pr_summary?.code_changes?.category) {
       const prCategory = entry.pr_summary.code_changes.category;
       // Map singular to plural
@@ -167,6 +170,19 @@ export function categorizeReleases(entries: ReleaseEntry[]): CategorizedReleases
         other: 'other',
       };
       category = categoryMap[prCategory] || 'other';
+    }
+    // Check Linear ticket category
+    else if (entry.linear_ticket?.category) {
+      const ticketCategory = entry.linear_ticket.category;
+      // Map singular to plural
+      const categoryMap: Record<string, keyof CategorizedReleases> = {
+        feature: 'features',
+        fix: 'fixes',
+        improvement: 'improvements',
+        docs: 'docs',
+        other: 'other',
+      };
+      category = categoryMap[ticketCategory] || 'other';
     }
 
     // Ensure category is valid

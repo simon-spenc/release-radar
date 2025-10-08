@@ -34,6 +34,7 @@ CREATE TABLE linear_tickets (
   ticket_url TEXT NOT NULL,
   completed_at TIMESTAMP NOT NULL,
   llm_summary TEXT NOT NULL,
+  category TEXT CHECK (category IN ('feature', 'fix', 'improvement', 'docs', 'other')),
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   edited_summary TEXT,
   approved_by TEXT,

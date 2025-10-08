@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
             additions: pr.additions,
             deletions: pr.deletions,
             files: files.map((f) => f.filename),
+            category: summary.category, // Store the LLM-determined category
           },
           llm_summary: summary.summary,
           original_description: pr.body,

@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
           ticket_url: ticket.url,
           completed_at: ticket.completedAt!,
           llm_summary: summary.summary,
+          category: summary.category, // Store the LLM-determined category
           status: 'pending',
         })
         .select()
