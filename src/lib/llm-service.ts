@@ -263,3 +263,89 @@ Return your response in this exact JSON format:
     throw error;
   }
 }
+
+export interface ReleaseNotesRequest {
+  weekStart: string;
+  weekEnd: string;
+  features: Array<{ title: string; summary: string; docLinks: string[] }>;
+  fixes: Array<{ title: string; summary: string; docLinks: string[] }>;
+  improvements: Array<{ title: string; summary: string; docLinks: string[] }>;
+  docs: Array<{ title: string; summary: string; docLinks: string[] }>;
+}
+
+export interface ReleaseNotesResponse {
+  emailCopy: string;
+  subject: string;
+}
+
+/**
+ * Generate release notes email copy using LLM
+ */
+export async function generateReleaseNotes(
+  request: ReleaseNotesRequest
+): Promise<ReleaseNotesResponse> {
+  const prompt = `You are a technical marketing copywriter creating a weekly release notes email for a product's customers.
+
+**Week:** ${request.weekStart} - ${request.weekEnd}
+
+**Features (${request.features.length}):**
+${request.features.map(f => `- ${f.title}: ${f.summary}`).join('\n') || 'None'}
+
+**Bug Fixes (${request.fixes.length}):**
+${request.fixes.map(f => `- ${f.title}: ${f.summary}`).join('\n') || 'None'}
+
+**Improvements (${request.improvements.length}):**
+${request.improvements.map(i => `- ${i.title}: ${i.summary}`).join('\n') || 'None'}
+
+**Documentation Updates (${request.docs.length}):**
+${request.docs.map(d => `- ${d.title}: ${d.summary}`).join('\n') || 'None'}
+
+Create an engaging email for customers with:
+1. Catchy subject line
+2. Brief executive summary (2-3 sentences)
+3. Categorized updates with user-friendly descriptions
+4. Professional but friendly tone
+5. Markdown format ready for HubSpot
+
+Return your response in this exact JSON format:
+{
+  "subject": "Email subject line here",
+  "emailCopy": "Full markdown email content here"
+}`;
+
+  try {
+    return await retryWithBackoff(async () => {
+      const client = getAnthropicClient();
+      const message = await client.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 2048,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+
+      const content = message.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Claude');
+      }
+
+      // Parse the JSON response
+      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not extract JSON from Claude response');
+      }
+
+      const result = JSON.parse(jsonMatch[0]) as ReleaseNotesResponse;
+      return result;
+    }, {
+      maxRetries: 3,
+      initialDelay: 1000,
+    });
+  } catch (error) {
+    console.error('Error generating release notes with Claude after retries:', error);
+    throw error;
+  }
+}
