@@ -1,8 +1,17 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { retryWithBackoff } from './retry';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Lazy initialization to ensure API key is loaded
+let anthropic: Anthropic | null = null;
+
+function getAnthropicClient() {
+  if (!anthropic) {
+    anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+  }
+  return anthropic;
+}
 
 export interface PRSummaryRequest {
   prNumber: number;
@@ -53,32 +62,38 @@ Return your response in this exact JSON format:
 }`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
+    return await retryWithBackoff(async () => {
+      const client = getAnthropicClient();
+      const message = await client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1024,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+
+      const content = message.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Claude');
+      }
+
+      // Parse the JSON response
+      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not extract JSON from Claude response');
+      }
+
+      const result = JSON.parse(jsonMatch[0]) as PRSummaryResponse;
+      return result;
+    }, {
+      maxRetries: 3,
+      initialDelay: 1000,
     });
-
-    const content = message.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Claude');
-    }
-
-    // Parse the JSON response
-    const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Could not extract JSON from Claude response');
-    }
-
-    const result = JSON.parse(jsonMatch[0]) as PRSummaryResponse;
-    return result;
   } catch (error) {
-    console.error('Error summarizing PR with Claude:', error);
+    console.error('Error summarizing PR with Claude after retries:', error);
 
     // Fallback summary
     return {
@@ -124,32 +139,38 @@ Return your response in this exact JSON format:
 }`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
+    return await retryWithBackoff(async () => {
+      const client = getAnthropicClient();
+      const message = await client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1024,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+
+      const content = message.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Claude');
+      }
+
+      // Parse the JSON response
+      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not extract JSON from Claude response');
+      }
+
+      const result = JSON.parse(jsonMatch[0]) as LinearTicketSummaryResponse;
+      return result;
+    }, {
+      maxRetries: 3,
+      initialDelay: 1000,
     });
-
-    const content = message.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Claude');
-    }
-
-    // Parse the JSON response
-    const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Could not extract JSON from Claude response');
-    }
-
-    const result = JSON.parse(jsonMatch[0]) as LinearTicketSummaryResponse;
-    return result;
   } catch (error) {
-    console.error('Error summarizing Linear ticket with Claude:', error);
+    console.error('Error summarizing Linear ticket with Claude after retries:', error);
 
     // Fallback summary
     return {

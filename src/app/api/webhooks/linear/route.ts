@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import type { LinearWebhook } from '@/types';
+import { supabaseAdmin } from '@/lib/supabase';
+import { summarizeLinearTicket } from '@/lib/llm-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,13 +21,42 @@ export async function POST(request: NextRequest) {
 
     // Only process completed issues
     if (payload.type === 'Issue' && payload.data.completedAt) {
-      // TODO: Process ticket and create summary
       console.log('Processing completed Linear ticket:', payload.data.identifier);
 
-      // This will be implemented in the next phase
+      const ticket = payload.data;
+
+      // Summarize with LLM
+      const summary = await summarizeLinearTicket({
+        ticketId: ticket.identifier,
+        ticketTitle: ticket.title,
+        ticketDescription: ticket.description,
+      });
+
+      // Store in database
+      const { data, error } = await supabaseAdmin
+        .from('linear_tickets')
+        .insert({
+          ticket_id: ticket.identifier,
+          ticket_title: ticket.title,
+          ticket_url: ticket.url,
+          completed_at: ticket.completedAt!,
+          llm_summary: summary.summary,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error storing Linear ticket summary:', error);
+        throw error;
+      }
+
+      console.log('Linear ticket summary created:', data.id);
+
       return NextResponse.json({
         success: true,
-        message: 'Ticket queued for processing'
+        message: 'Ticket processed and summary created',
+        summary_id: data.id,
       });
     }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import type { Database } from '@/types/database';
+import type { Database } from '@/types/database.generated';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -42,10 +42,9 @@ export async function PATCH(
         updateData.edited_summary = edited_summary;
       }
 
-      // @ts-ignore - Supabase type inference issue
       const result = await supabaseAdmin
         .from('pr_summaries')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', id)
         .select()
         .single();
@@ -66,10 +65,9 @@ export async function PATCH(
         updateData.edited_summary = edited_summary;
       }
 
-      // @ts-ignore - Supabase type inference issue
       const result = await supabaseAdmin
         .from('linear_tickets')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', id)
         .select()
         .single();
