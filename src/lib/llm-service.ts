@@ -275,6 +275,7 @@ export interface ReleaseNotesRequest {
 
 export interface ReleaseNotesResponse {
   emailCopy: string;
+  emailHtml: string;
   subject: string;
 }
 
@@ -305,12 +306,20 @@ Create an engaging email for customers with:
 2. Brief executive summary (2-3 sentences)
 3. Categorized updates with user-friendly descriptions
 4. Professional but friendly tone
-5. Markdown format ready for HubSpot
+5. Two formats: Markdown for HubSpot AND styled HTML for preview
+
+For the HTML version:
+- Use professional email styling with inline CSS
+- Clean, modern design with proper spacing
+- Branded colors and typography
+- Mobile-friendly responsive design
+- Include sections with headers for each category
 
 Return your response in this exact JSON format:
 {
   "subject": "Email subject line here",
-  "emailCopy": "Full markdown email content here"
+  "emailCopy": "Full markdown email content here",
+  "emailHtml": "Full HTML email with inline CSS here"
 }`;
 
   try {
@@ -318,7 +327,7 @@ Return your response in this exact JSON format:
       const client = getAnthropicClient();
       const message = await client.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 2048,
+        max_tokens: 4096,
         messages: [
           {
             role: 'user',
