@@ -194,25 +194,28 @@ ${filesUpdated.map(f => `- ${f}`).join('\n')}
     'main' // base branch
   );
 
-  // 6. Create release entry in database
-  const releaseEntryData = {
-    [sourceType === 'pr' ? 'pr_summary_id' : 'linear_ticket_id']: sourceId,
-    release_week: getStartOfWeek(new Date()),
-    doc_pages_updated: filesUpdated.map(path => ({
-      path,
-      url: `https://release-radar-docs.vercel.app/${path.replace('app/', '').replace('/page.md', '')}`,
-      change_type: category,
-    })),
+  // 6. Update the PR or ticket with doc information
+  const docPagesUpdated = filesUpdated.map(path => ({
+    path,
+    url: `https://release-radar-docs.vercel.app/${path.replace('app/', '').replace('/page.md', '')}`,
+    change_type: category,
+  }));
+
+  const updateData = {
     doc_pr_url: docPrUrl,
     doc_pr_merged: false,
+    doc_pages_updated: docPagesUpdated,
   };
 
-  const { error: insertError } = await supabaseAdmin
-    .from('release_entries')
-    .insert(releaseEntryData);
+  const tableName = sourceType === 'pr' ? 'pr_summaries' : 'linear_tickets';
+  const { error: updateError } = await supabaseAdmin
+    .from(tableName)
+    .update(updateData)
+    .eq('id', sourceId);
 
-  if (insertError) {
-    console.error('Error creating release entry:', insertError);
+  if (updateError) {
+    console.error(`Error updating ${tableName}:`, updateError);
+    // Don't fail the request - the doc PR was created successfully
   }
 
   return {

@@ -12,7 +12,6 @@ interface ApprovedItem {
   url: string;
   approved_at: string;
   approved_by: string;
-  release_week?: string;
   doc_pr_url?: string;
   doc_pr_merged?: boolean;
 }
@@ -41,9 +40,8 @@ export default function ApprovedPage() {
         url: pr.pr_url,
         approved_at: pr.approved_at,
         approved_by: pr.approved_by,
-        release_week: pr.release_entries?.[0]?.release_week,
-        doc_pr_url: pr.release_entries?.[0]?.doc_pr_url,
-        doc_pr_merged: pr.release_entries?.[0]?.doc_pr_merged,
+        doc_pr_url: pr.doc_pr_url,
+        doc_pr_merged: pr.doc_pr_merged,
       }));
 
       const ticketItems: ApprovedItem[] = (data.linearTickets || []).map((ticket: any) => ({
@@ -54,9 +52,8 @@ export default function ApprovedPage() {
         url: ticket.ticket_url,
         approved_at: ticket.approved_at,
         approved_by: ticket.approved_by,
-        release_week: ticket.release_entries?.[0]?.release_week,
-        doc_pr_url: ticket.release_entries?.[0]?.doc_pr_url,
-        doc_pr_merged: ticket.release_entries?.[0]?.doc_pr_merged,
+        doc_pr_url: ticket.doc_pr_url,
+        doc_pr_merged: ticket.doc_pr_merged,
       }));
 
       const allItems = [...prItems, ...ticketItems].sort(
@@ -193,11 +190,6 @@ export default function ApprovedPage() {
                     >
                       {item.type === 'pr' ? 'Pull Request' : 'Linear Ticket'}
                     </span>
-                    {item.release_week && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Week of {formatDate(item.release_week)}
-                      </span>
-                    )}
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                     <a

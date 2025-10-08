@@ -290,25 +290,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (error) throw new Error(`Failed to approve: ${error.message}`);
 
-    // Create release entry
-    const releaseWeek = getWeekStartDate(new Date());
-    const entryData: any = {
-      release_week: releaseWeek,
-    };
-
-    if (type === 'pr') {
-      entryData.pr_summary_id = id;
-    } else {
-      entryData.linear_ticket_id = id;
-    }
-
-    await supabaseAdmin.from('release_entries').insert(entryData);
-
     return {
       content: [
         {
           type: 'text',
-          text: `Successfully approved ${type} summary ${id}. Release entry created for week of ${releaseWeek}.`,
+          text: `Successfully approved ${type} summary ${id}.`,
         },
       ],
     };

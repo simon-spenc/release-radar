@@ -3,35 +3,19 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET() {
   try {
-    // Fetch approved PR summaries with release entry info
+    // Fetch approved PR summaries (doc info now stored directly on PRs)
     const { data: prSummaries, error: prError } = await supabaseAdmin
       .from('pr_summaries')
-      .select(`
-        *,
-        release_entries (
-          id,
-          release_week,
-          doc_pr_url,
-          doc_pr_merged
-        )
-      `)
+      .select('*')
       .eq('status', 'approved')
       .order('approved_at', { ascending: false });
 
     if (prError) throw prError;
 
-    // Fetch approved Linear tickets with release entry info
+    // Fetch approved Linear tickets (doc info now stored directly on tickets)
     const { data: linearTickets, error: ticketError } = await supabaseAdmin
       .from('linear_tickets')
-      .select(`
-        *,
-        release_entries (
-          id,
-          release_week,
-          doc_pr_url,
-          doc_pr_merged
-        )
-      `)
+      .select('*')
       .eq('status', 'approved')
       .order('approved_at', { ascending: false });
 

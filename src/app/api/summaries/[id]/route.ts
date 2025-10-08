@@ -73,22 +73,6 @@ export async function PATCH(
 
     if (error) throw error;
 
-    // If approved, create release entry
-    if (status === 'approved') {
-      const releaseWeek = getWeekStartDate(new Date());
-      const entryData: any = {
-        release_week: releaseWeek,
-      };
-
-      if (type === 'pr') {
-        entryData.pr_summary_id = id;
-      } else {
-        entryData.linear_ticket_id = id;
-      }
-
-      await supabaseAdmin.from('release_entries').insert(entryData);
-    }
-
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Error updating summary:', error);
