@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import type { PRSummary, LinearTicket } from '@/types';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle2, Clock, ExternalLink, FileEdit, Loader2 } from 'lucide-react';
 
 interface ApprovedItem {
   id: string;
@@ -210,40 +213,51 @@ export default function ApprovedPage() {
                     <span>{formatDate(item.approved_at)}</span>
                   </div>
                 </div>
-                <div className="ml-4">
+                <div className="ml-4 flex flex-col gap-2">
                   {item.doc_pr_url ? (
-                    <div className="text-right">
-                      <a
-                        href={item.doc_pr_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-                      >
-                        Doc PR
-                        <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                      <div className="mt-1">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            item.doc_pr_merged
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                          }`}
+                    <>
+                      <Badge variant={item.doc_pr_merged ? "default" : "secondary"} className="w-fit">
+                        {item.doc_pr_merged ? (
+                          <>
+                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                            Docs Updated
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="mr-1 h-3 w-3" />
+                            PR Pending
+                          </>
+                        )}
+                      </Badge>
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={item.doc_pr_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          {item.doc_pr_merged ? 'Merged' : 'Pending'}
-                        </span>
-                      </div>
-                    </div>
+                          View PR
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </a>
+                      </Button>
+                    </>
                   ) : (
-                    <button
+                    <Button
                       onClick={() => handleUpdateDocs(item)}
                       disabled={updatingDocs === item.id}
-                      className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      size="sm"
                     >
-                      {updatingDocs === item.id ? 'Creating...' : 'Update Docs'}
-                    </button>
+                      {updatingDocs === item.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <FileEdit className="mr-2 h-4 w-4" />
+                          Update Docs
+                        </>
+                      )}
+                    </Button>
                   )}
                 </div>
               </div>
