@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,13 +113,21 @@ export default function ReleasesPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Release Notes
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Generate weekly release notes email copy for HubSpot.
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Release Notes
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Generate weekly release notes email copy for HubSpot.
+          </p>
+        </div>
+        <Button variant="outline" asChild>
+          <Link href="/dashboard/releases/history">
+            <FileText className="mr-2 h-4 w-4" />
+            View History
+          </Link>
+        </Button>
       </div>
 
       {/* Week Selector */}

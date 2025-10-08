@@ -74,9 +74,9 @@ export async function POST(request: NextRequest) {
     console.log('[Release Notes] LLM Request:', JSON.stringify(llmRequest, null, 2));
 
     // Generate release notes with LLM
-    const { emailCopy, subject } = await generateReleaseNotes(llmRequest);
+    const { emailCopy, emailHtml, subject } = await generateReleaseNotes(llmRequest);
 
-    // Save to database (subject field will be added to schema separately)
+    // Save to database
     const { data: savedNote, error: saveError } = await supabaseAdmin
       .from('release_notes')
       .upsert(
@@ -89,9 +89,10 @@ export async function POST(request: NextRequest) {
             improvements: categorized.improvements.length,
             docs: categorized.docs.length,
             categorized,
-            subject, // Store subject in entries JSONB for now
+            subject, // Store subject in entries JSONB
           },
           email_copy: emailCopy,
+          email_html: emailHtml,
         },
         {
           onConflict: 'week_starting',
