@@ -110,16 +110,16 @@ export default function PendingApprovalsPage() {
   return (
     <div className="px-4 sm:px-0">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold tracking-tight">
           Pending Approvals
         </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           Review and approve documentation updates from merged PRs and completed Linear tickets.
         </p>
         <div className="mt-4">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+          <Badge variant="secondary" className="text-sm">
             {totalPending} pending {totalPending === 1 ? 'item' : 'items'}
-          </span>
+          </Badge>
         </div>
       </div>
 
@@ -139,7 +139,7 @@ export default function PendingApprovalsPage() {
         <div className="space-y-6">
           {prSummaries.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-xl font-semibold tracking-tight mb-4">
                 Pull Requests ({prSummaries.length})
               </h2>
               <SummaryTable
@@ -152,7 +152,7 @@ export default function PendingApprovalsPage() {
 
           {linearTickets.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-xl font-semibold tracking-tight mb-4">
                 Linear Tickets ({linearTickets.length})
               </h2>
               <SummaryTable
