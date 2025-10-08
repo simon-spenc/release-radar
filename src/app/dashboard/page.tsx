@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { FileCheck, FileClock, FileText, TrendingUp, ArrowRight } from 'lucide-react';
 
 interface Stats {
@@ -25,24 +26,61 @@ export default function DashboardPage() {
           fetch('/api/summaries/approved'),
         ]);
 
-        const pending = await pendingRes.json();
-        const approved = await approvedRes.json();
+        // Check if responses are OK
+        if (!pendingRes.ok) {
+          console.error('Pending API error:', pendingRes.status, pendingRes.statusText);
+          const pendingText = await pendingRes.text();
+          console.error('Pending API response:', pendingText);
+        }
+
+        if (!approvedRes.ok) {
+          console.error('Approved API error:', approvedRes.status, approvedRes.statusText);
+          const approvedText = await approvedRes.text();
+          console.error('Approved API response:', approvedText);
+        }
+
+        // Try to parse JSON, but handle HTML responses gracefully
+        let pending, approved;
+        
+        try {
+          pending = await pendingRes.json();
+        } catch (jsonError) {
+          console.error('Failed to parse pending response as JSON:', jsonError);
+          pending = { prSummaries: [], linearTickets: [] };
+        }
+
+        try {
+          approved = await approvedRes.json();
+        } catch (jsonError) {
+          console.error('Failed to parse approved response as JSON:', jsonError);
+          approved = { prSummaries: [], linearTickets: [] };
+        }
 
         // Calculate this week's approved items
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
 
-        const thisWeek = approved.summaries?.filter((item: any) =>
+        const thisWeek = approved.prSummaries?.filter((item: any) =>
+          new Date(item.approved_at) > weekAgo
+        ).length || 0;
+
+        const approvedTicketsThisWeek = approved.linearTickets?.filter((item: any) =>
           new Date(item.approved_at) > weekAgo
         ).length || 0;
 
         setStats({
-          pending: pending.summaries?.length || 0,
-          approved: approved.summaries?.length || 0,
-          thisWeek,
+          pending: (pending.prSummaries?.length || 0) + (pending.linearTickets?.length || 0),
+          approved: (approved.prSummaries?.length || 0) + (approved.linearTickets?.length || 0),
+          thisWeek: thisWeek + approvedTicketsThisWeek,
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
+        // Set default stats on error
+        setStats({
+          pending: 0,
+          approved: 0,
+          thisWeek: 0,
+        });
       } finally {
         setLoading(false);
       }
@@ -62,7 +100,7 @@ export default function DashboardPage() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
+            <Skeleton key={i} className="h-48" />
           ))}
         </div>
       </div>
@@ -70,7 +108,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="@container/main space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
@@ -78,69 +116,94 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+      <div className="@xl/main:grid-cols-3 grid grid-cols-1 gap-4">
+        <Card className="@container/card bg-gradient-to-t from-primary/5 to-card shadow-sm">
+          <CardHeader className="relative">
+            <CardDescription className="flex items-center gap-2">
+              <FileClock className="h-4 w-4" />
               Pending Approvals
+            </CardDescription>
+            <CardTitle className="@[250px]/card:text-4xl text-3xl font-semibold tabular-nums">
+              {stats?.pending || 0}
             </CardTitle>
-            <FileClock className="h-4 w-4 text-muted-foreground" />
+            <div className="absolute right-4 top-4">
+              <Badge variant="outline" className="rounded-lg">
+                Awaiting Review
+              </Badge>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.pending || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Awaiting review
-            </p>
-            <Link href="/dashboard/pending">
-              <Button variant="ghost" size="sm" className="mt-3 w-full justify-start">
-                View pending <ArrowRight className="ml-2 h-4 w-4" />
+          <CardFooter className="flex-col items-start gap-3 pt-4">
+            <div className="text-sm text-muted-foreground">
+              PRs and tickets ready for review
+            </div>
+            <Link href="/dashboard/pending" className="w-full">
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                Review pending
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-          </CardContent>
+          </CardFooter>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+        <Card className="@container/card bg-gradient-to-t from-primary/5 to-card shadow-sm">
+          <CardHeader className="relative">
+            <CardDescription className="flex items-center gap-2">
+              <FileCheck className="h-4 w-4" />
               Approved Items
+            </CardDescription>
+            <CardTitle className="@[250px]/card:text-4xl text-3xl font-semibold tabular-nums">
+              {stats?.approved || 0}
             </CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
+            <div className="absolute right-4 top-4">
+              <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
+                <TrendingUp className="size-3" />
+                Ready
+              </Badge>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.approved || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Ready for release notes
-            </p>
-            <Link href="/dashboard/approved">
-              <Button variant="ghost" size="sm" className="mt-3 w-full justify-start">
-                View approved <ArrowRight className="ml-2 h-4 w-4" />
+          <CardFooter className="flex-col items-start gap-3 pt-4">
+            <div className="text-sm text-muted-foreground">
+              Ready for release notes and documentation
+            </div>
+            <Link href="/dashboard/approved" className="w-full">
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                View approved
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-          </CardContent>
+          </CardFooter>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+        <Card className="@container/card bg-gradient-to-t from-primary/5 to-card shadow-sm">
+          <CardHeader className="relative">
+            <CardDescription className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
               This Week
+            </CardDescription>
+            <CardTitle className="@[250px]/card:text-4xl text-3xl font-semibold tabular-nums">
+              {stats?.thisWeek || 0}
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <div className="absolute right-4 top-4">
+              <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
+                Last 7 days
+              </Badge>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.thisWeek || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Approved in last 7 days
-            </p>
-            <Link href="/dashboard/releases">
-              <Button variant="ghost" size="sm" className="mt-3 w-full justify-start">
-                Generate notes <ArrowRight className="ml-2 h-4 w-4" />
+          <CardFooter className="flex-col items-start gap-3 pt-4">
+            <div className="text-sm text-muted-foreground">
+              Items approved in the last 7 days
+            </div>
+            <Link href="/dashboard/releases" className="w-full">
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                Generate notes
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
 
-      <Card>
+      <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>

@@ -2,24 +2,14 @@
 
 import * as React from "react"
 import {
-  ArrowUpCircleIcon,
-  BarChartIcon,
-  CameraIcon,
-  ClipboardListIcon,
-  DatabaseIcon,
-  FileCodeIcon,
-  FileIcon,
+  FileCheckIcon,
+  FileClockIcon,
   FileTextIcon,
-  FolderIcon,
-  HelpCircleIcon,
   LayoutDashboardIcon,
-  ListIcon,
-  SearchIcon,
   SettingsIcon,
-  UsersIcon,
+  SparklesIcon,
 } from "lucide-react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -36,24 +26,24 @@ import {
 const data = {
   user: {
     name: "Release Radar",
-    email: "docs@example.com",
+    email: "admin@releaseradar.com",
     avatar: "/avatars/user.jpg",
   },
   navMain: [
     {
-      title: "Overview",
+      title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboardIcon,
     },
     {
       title: "Pending Approvals",
       url: "/dashboard/pending",
-      icon: ClipboardListIcon,
+      icon: FileClockIcon,
     },
     {
-      title: "Approved",
+      title: "Approved Items",
       url: "/dashboard/approved",
-      icon: FileIcon,
+      icon: FileCheckIcon,
     },
     {
       title: "Release Notes",
@@ -61,20 +51,12 @@ const data = {
       icon: FileTextIcon,
     },
   ],
-  navClouds: [],
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: SettingsIcon,
     },
-    {
-      title: "Get Help",
-      url: "https://github.com/simon-spenc/release-radar",
-      icon: HelpCircleIcon,
-    },
-  ],
-  documents: [
   ],
 }
 
@@ -89,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/dashboard">
-                <FileTextIcon className="h-5 w-5" />
+                <SparklesIcon className="h-5 w-5" />
                 <span className="text-base font-semibold">Release Radar</span>
               </a>
             </SidebarMenuButton>
@@ -98,7 +80,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

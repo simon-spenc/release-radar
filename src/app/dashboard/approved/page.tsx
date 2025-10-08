@@ -5,6 +5,7 @@ import type { PRSummary, LinearTicket } from '@/types';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CheckCircle2, Clock, ExternalLink, FileEdit, Loader2 } from 'lucide-react';
 
 interface ApprovedItem {
@@ -119,7 +120,7 @@ export default function ApprovedPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
@@ -127,104 +128,87 @@ export default function ApprovedPage() {
   return (
     <div className="px-4 sm:px-0">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold tracking-tight">
           Approved Changes
         </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           View all approved documentation updates and their release status.
         </p>
       </div>
 
       {/* Filters */}
       <div className="mb-6 flex space-x-2">
-        <button
+        <Button
+          variant={filter === 'all' ? 'default' : 'outline'}
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            filter === 'all'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-          }`}
         >
           All ({items.length})
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={filter === 'pr' ? 'default' : 'outline'}
           onClick={() => setFilter('pr')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            filter === 'pr'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-          }`}
         >
           PRs ({items.filter((i) => i.type === 'pr').length})
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={filter === 'ticket' ? 'default' : 'outline'}
           onClick={() => setFilter('ticket')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium ${
-            filter === 'ticket'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-          }`}
         >
           Tickets ({items.filter((i) => i.type === 'ticket').length})
-        </button>
+        </Button>
       </div>
 
       {/* Items Grid */}
       {filteredItems.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-500 dark:text-gray-400">No approved items found.</p>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <CheckCircle2 className="h-12 w-12 text-muted-foreground" />
+            <p className="mt-4 text-muted-foreground">No approved items found.</p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-4">
           {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.type === 'pr'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                          : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                      }`}
-                    >
-                      {item.type === 'pr' ? 'Pull Request' : 'Linear Ticket'}
-                    </span>
+            <Card key={item.id}>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Badge variant={item.type === 'pr' ? 'default' : 'secondary'}>
+                        {item.type === 'pr' ? 'Pull Request' : 'Linear Ticket'}
+                      </Badge>
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-primary hover:underline"
+                      >
+                        {item.title}
+                      </a>
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {item.summary}
+                    </p>
+                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                      <span>Approved by {item.approved_by}</span>
+                      <span>•</span>
+                      <span>{formatDate(item.approved_at)}</span>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-indigo-600 dark:hover:text-indigo-400"
-                    >
-                      {item.title}
-                    </a>
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    {item.summary}
-                  </p>
-                  <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                    <span>Approved by {item.approved_by}</span>
-                    <span>•</span>
-                    <span>{formatDate(item.approved_at)}</span>
-                  </div>
-                </div>
                 <div className="ml-4 flex flex-col gap-2">
                   {item.doc_pr_url ? (
                     <>
-                      <Badge variant={item.doc_pr_merged ? "default" : "secondary"} className="w-fit">
+                      <Badge variant={item.doc_pr_merged ? "default" : "outline"} className="w-fit gap-1">
                         {item.doc_pr_merged ? (
                           <>
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                            <CheckCircle2 className="h-3 w-3" />
                             Docs Updated
                           </>
                         ) : (
                           <>
-                            <Clock className="mr-1 h-3 w-3" />
+                            <Clock className="h-3 w-3" />
                             PR Pending
                           </>
                         )}
@@ -234,9 +218,10 @@ export default function ApprovedPage() {
                           href={item.doc_pr_url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          className="gap-1"
                         >
                           View PR
-                          <ExternalLink className="ml-1 h-3 w-3" />
+                          <ExternalLink className="h-3 w-3" />
                         </a>
                       </Button>
                     </>
@@ -245,15 +230,16 @@ export default function ApprovedPage() {
                       onClick={() => handleUpdateDocs(item)}
                       disabled={updatingDocs === item.id}
                       size="sm"
+                      className="gap-2"
                     >
                       {updatingDocs === item.id ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                           Creating...
                         </>
                       ) : (
                         <>
-                          <FileEdit className="mr-2 h-4 w-4" />
+                          <FileEdit className="h-4 w-4" />
                           Update Docs
                         </>
                       )}
@@ -261,7 +247,8 @@ export default function ApprovedPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </CardContent>
+            </Card>
           ))}
         </div>
       )}

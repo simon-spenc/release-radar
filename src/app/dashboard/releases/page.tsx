@@ -113,10 +113,10 @@ export default function ReleasesPage() {
   return (
     <div className="px-4 sm:px-0">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold tracking-tight">
           Release Notes
         </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           Generate weekly release notes email copy for HubSpot.
         </p>
       </div>
@@ -139,9 +139,9 @@ export default function ReleasesPage() {
                 setSelectedWeek(e.target.value);
                 fetchReleaseNote(e.target.value);
               }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-input rounded-lg bg-background text-foreground"
             />
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-sm text-muted-foreground">
               Week of {formatWeekRange(selectedWeek)}
             </span>
             <Button
@@ -178,9 +178,9 @@ export default function ReleasesPage() {
         <div className="space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Changes
                 </CardTitle>
               </CardHeader>
@@ -188,51 +188,51 @@ export default function ReleasesPage() {
                 <div className="text-2xl font-bold">{releaseNote.entries.total}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Features
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{releaseNote.entries.features}</div>
+                <div className="text-2xl font-bold">{releaseNote.entries.features}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Bug Fixes
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{releaseNote.entries.fixes}</div>
+                <div className="text-2xl font-bold">{releaseNote.entries.fixes}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Improvements
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{releaseNote.entries.improvements}</div>
+                <div className="text-2xl font-bold">{releaseNote.entries.improvements}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Docs
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">{releaseNote.entries.docs}</div>
+                <div className="text-2xl font-bold">{releaseNote.entries.docs}</div>
               </CardContent>
             </Card>
           </div>
 
           {/* Subject Line */}
           {releaseNote.entries.subject && (
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Email Subject</CardTitle>
@@ -240,8 +240,9 @@ export default function ReleasesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => copyToClipboard(releaseNote.entries.subject!, 'Subject')}
+                    className="gap-2"
                   >
-                    <Copy className="h-4 w-4 mr-2" />
+                    <Copy className="h-4 w-4" />
                     Copy
                   </Button>
                 </div>
@@ -253,7 +254,7 @@ export default function ReleasesPage() {
           )}
 
           {/* Email Copy */}
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -262,15 +263,16 @@ export default function ReleasesPage() {
                 </div>
                 <Button
                   onClick={() => copyToClipboard(releaseNote.email_copy, 'Email copy')}
+                  className="gap-2"
                 >
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="h-4 w-4" />
                   Copy to Clipboard
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <pre className="whitespace-pre-wrap text-sm text-gray-900 dark:text-gray-100 font-mono">
+              <div className="bg-muted rounded-lg p-6 border">
+                <pre className="whitespace-pre-wrap text-sm font-mono">
                   {releaseNote.email_copy}
                 </pre>
               </div>
@@ -278,7 +280,7 @@ export default function ReleasesPage() {
           </Card>
 
           {/* Metadata */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>Generated {formatDate(releaseNote.created_at)}</span>
             {releaseNote.sent_at && (
               <>
@@ -292,15 +294,17 @@ export default function ReleasesPage() {
 
       {/* No Release Note */}
       {!loading && !releaseNote && (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <FileText className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-sm font-medium text-gray-900 dark:text-white">
-            No release notes yet
-          </h3>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Click &quot;Generate Release Notes&quot; to create email copy for this week.
-          </p>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <FileText className="h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-sm font-medium">
+              No release notes yet
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Click &quot;Generate Release Notes&quot; to create email copy for this week.
+            </p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
