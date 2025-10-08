@@ -21,6 +21,10 @@ export async function POST(request: NextRequest) {
     // Fetch all release entries for the week
     const entries = await fetchReleaseEntriesForWeek(targetWeek);
 
+    console.log('[Release Notes] Target week:', targetWeek);
+    console.log('[Release Notes] Found entries:', entries.length);
+    console.log('[Release Notes] Entries:', JSON.stringify(entries, null, 2));
+
     if (entries.length === 0) {
       return NextResponse.json(
         { error: 'No release entries found for this week' },
@@ -30,6 +34,13 @@ export async function POST(request: NextRequest) {
 
     // Categorize releases
     const categorized = categorizeReleases(entries);
+    console.log('[Release Notes] Categorized:', {
+      features: categorized.features.length,
+      fixes: categorized.fixes.length,
+      improvements: categorized.improvements.length,
+      docs: categorized.docs.length,
+      other: categorized.other.length,
+    });
 
     // Prepare data for LLM
     const weekRange = formatWeekRange(targetWeek);
@@ -59,6 +70,8 @@ export async function POST(request: NextRequest) {
         docLinks: entry.doc_pages_updated?.map(p => p.url) || [],
       })),
     };
+
+    console.log('[Release Notes] LLM Request:', JSON.stringify(llmRequest, null, 2));
 
     // Generate release notes with LLM
     const { emailCopy, subject } = await generateReleaseNotes(llmRequest);
