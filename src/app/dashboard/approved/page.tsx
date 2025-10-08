@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { PRSummary, LinearTicket } from '@/types';
+import { toast } from 'sonner';
 
 interface ApprovedItem {
   id: string;
@@ -20,6 +21,7 @@ export default function ApprovedPage() {
   const [items, setItems] = useState<ApprovedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pr' | 'ticket'>('all');
+  const [updatingDocs, setUpdatingDocs] = useState<string | null>(null);
 
   useEffect(() => {
     fetchApproved();
@@ -80,6 +82,38 @@ export default function ApprovedPage() {
       day: 'numeric',
       year: 'numeric',
     });
+  };
+
+  const handleUpdateDocs = async (item: ApprovedItem) => {
+    setUpdatingDocs(item.id);
+    try {
+      const response = await fetch('/api/docs/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: item.type,
+          id: item.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.details || 'Failed to update documentation');
+      }
+
+      const result = await response.json();
+      toast.success(`Documentation PR created: ${result.docPrUrl}`);
+
+      // Refresh the list to show the new doc PR
+      fetchApproved();
+    } catch (error) {
+      console.error('Error updating docs:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update documentation');
+    } finally {
+      setUpdatingDocs(null);
+    }
   };
 
   if (loading) {
@@ -211,9 +245,13 @@ export default function ApprovedPage() {
                       </div>
                     </div>
                   ) : (
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                      No doc PR
-                    </span>
+                    <button
+                      onClick={() => handleUpdateDocs(item)}
+                      disabled={updatingDocs === item.id}
+                      className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {updatingDocs === item.id ? 'Creating...' : 'Update Docs'}
+                    </button>
                   )}
                 </div>
               </div>

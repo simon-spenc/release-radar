@@ -81,3 +81,134 @@ export async function getPRDetails(owner: string, repo: string, prNumber: number
     throw new Error(`Failed to fetch PR details: ${error}`);
   }
 }
+
+/**
+ * Get the SHA of the default branch (main/master)
+ */
+export async function getDefaultBranchSHA(owner: string, repo: string): Promise<string> {
+  try {
+    const { data: repoData } = await octokit.repos.get({ owner, repo });
+    const defaultBranch = repoData.default_branch;
+
+    const { data: refData } = await octokit.git.getRef({
+      owner,
+      repo,
+      ref: `heads/${defaultBranch}`,
+    });
+
+    return refData.object.sha;
+  } catch (error) {
+    console.error('Error getting default branch SHA:', error);
+    throw new Error(`Failed to get default branch SHA: ${error}`);
+  }
+}
+
+/**
+ * Create a new branch in the repository
+ */
+export async function createBranch(
+  owner: string,
+  repo: string,
+  branchName: string,
+  fromSHA: string
+): Promise<void> {
+  try {
+    await octokit.git.createRef({
+      owner,
+      repo,
+      ref: `refs/heads/${branchName}`,
+      sha: fromSHA,
+    });
+  } catch (error) {
+    console.error('Error creating branch:', error);
+    throw new Error(`Failed to create branch: ${error}`);
+  }
+}
+
+/**
+ * Get file content from repository
+ */
+export async function getFileContent(
+  owner: string,
+  repo: string,
+  path: string,
+  ref?: string
+): Promise<{ content: string; sha: string }> {
+  try {
+    const { data } = await octokit.repos.getContent({
+      owner,
+      repo,
+      path,
+      ref,
+    });
+
+    if (Array.isArray(data) || data.type !== 'file') {
+      throw new Error(`Path ${path} is not a file`);
+    }
+
+    const content = Buffer.from(data.content, 'base64').toString('utf-8');
+    return { content, sha: data.sha };
+  } catch (error) {
+    console.error('Error getting file content:', error);
+    throw new Error(`Failed to get file content: ${error}`);
+  }
+}
+
+/**
+ * Update or create a file in the repository
+ */
+export async function updateFile(
+  owner: string,
+  repo: string,
+  path: string,
+  content: string,
+  message: string,
+  branch: string,
+  sha?: string
+): Promise<void> {
+  try {
+    await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path,
+      message,
+      content: Buffer.from(content).toString('base64'),
+      branch,
+      sha, // Required if updating existing file
+    });
+  } catch (error) {
+    console.error('Error updating file:', error);
+    throw new Error(`Failed to update file: ${error}`);
+  }
+}
+
+/**
+ * Create a pull request
+ */
+export async function createPullRequest(
+  owner: string,
+  repo: string,
+  title: string,
+  body: string,
+  head: string,
+  base: string
+): Promise<{ url: string; number: number }> {
+  try {
+    const { data } = await octokit.pulls.create({
+      owner,
+      repo,
+      title,
+      body,
+      head,
+      base,
+    });
+
+    return {
+      url: data.html_url,
+      number: data.number,
+    };
+  } catch (error) {
+    console.error('Error creating pull request:', error);
+    throw new Error(`Failed to create pull request: ${error}`);
+  }
+}

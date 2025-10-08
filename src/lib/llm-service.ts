@@ -180,3 +180,86 @@ Return your response in this exact JSON format:
     };
   }
 }
+
+export interface DocUpdateRequest {
+  summary: string;
+  category: 'feature' | 'fix' | 'improvement' | 'docs' | 'other';
+  existingContent: string;
+  docPath: string;
+}
+
+export interface DocUpdateResponse {
+  updatedContent: string;
+  changeRationale: string;
+}
+
+/**
+ * Generate documentation updates based on approved PR/ticket summary
+ */
+export async function generateDocUpdate(
+  request: DocUpdateRequest
+): Promise<DocUpdateResponse> {
+  const prompt = `You are a technical documentation writer. You need to update a Markdoc documentation page based on a recently approved change.
+
+**Change Summary:**
+${request.summary}
+
+**Change Category:** ${request.category}
+
+**Documentation Page:** ${request.docPath}
+
+**Existing Content:**
+\`\`\`markdown
+${request.existingContent}
+\`\`\`
+
+Please update the documentation to reflect this change. Your updated documentation should:
+1. Integrate the new information naturally into the existing content
+2. Maintain the existing Markdoc frontmatter (title, description)
+3. Keep the same overall structure and tone
+4. Add new sections only if necessary
+5. Update existing sections if the change affects them
+6. Ensure the content is clear and user-friendly
+
+Return your response in this exact JSON format:
+{
+  "updatedContent": "Full updated Markdoc content here (including frontmatter)",
+  "changeRationale": "Brief explanation of what sections were updated and why"
+}`;
+
+  try {
+    return await retryWithBackoff(async () => {
+      const client = getAnthropicClient();
+      const message = await client.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 4096,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+
+      const content = message.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Claude');
+      }
+
+      // Parse the JSON response
+      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not extract JSON from Claude response');
+      }
+
+      const result = JSON.parse(jsonMatch[0]) as DocUpdateResponse;
+      return result;
+    }, {
+      maxRetries: 3,
+      initialDelay: 1000,
+    });
+  } catch (error) {
+    console.error('Error generating doc update with Claude after retries:', error);
+    throw error;
+  }
+}
