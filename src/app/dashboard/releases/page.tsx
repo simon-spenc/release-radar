@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Copy, FileText, Sparkles } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar, Copy, FileText, Sparkles, Eye, Code } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ReleaseNote {
   id: string;
@@ -30,6 +33,7 @@ export default function ReleasesPage() {
   const [generating, setGenerating] = useState(false);
   const [releaseNote, setReleaseNote] = useState<ReleaseNote | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'plain' | 'styled'>('plain');
 
   useEffect(() => {
     // Set current week on mount
@@ -267,24 +271,52 @@ export default function ReleasesPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Email Copy</CardTitle>
-                  <CardDescription>Ready for HubSpot - Markdown format</CardDescription>
+                  <CardTitle>Email Content</CardTitle>
+                  <CardDescription>Toggle between plain text and styled preview</CardDescription>
                 </div>
                 <Button
                   onClick={() => copyToClipboard(releaseNote.email_copy, 'Email copy')}
                   className="gap-2"
                 >
                   <Copy className="h-4 w-4" />
-                  Copy to Clipboard
+                  Copy Plain Text
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted rounded-lg p-6 border">
-                <pre className="whitespace-pre-wrap text-sm font-mono">
-                  {releaseNote.email_copy}
-                </pre>
-              </div>
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'plain' | 'styled')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="plain" className="gap-2">
+                    <Code className="h-4 w-4" />
+                    Plain Text
+                  </TabsTrigger>
+                  <TabsTrigger value="styled" className="gap-2">
+                    <Eye className="h-4 w-4" />
+                    Styled Preview
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="plain" className="mt-4">
+                  <div className="bg-muted rounded-lg p-6 border">
+                    <pre className="whitespace-pre-wrap text-sm font-mono">
+                      {releaseNote.email_copy}
+                    </pre>
+                  </div>
+                </TabsContent>
+                <TabsContent value="styled" className="mt-4">
+                  <div className="bg-background border rounded-lg p-6">
+                    <div className="space-y-4">
+                      <div className="text-sm text-muted-foreground mb-4">
+                        Debug: Content length: {releaseNote.email_copy?.length || 0} characters
+                      </div>
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {releaseNote.email_copy}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
