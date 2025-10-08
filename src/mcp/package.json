@@ -1,0 +1,14 @@
+{
+  "name": "release-radar-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Release Radar",
+  "type": "module",
+  "main": "server.js",
+  "bin": {
+    "release-radar-mcp": "./server.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x dist/server.js",
+    "start": "node dist/server.js"
+  }
+}

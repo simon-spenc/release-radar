@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2022",
+    "noEmit": false,
+    "outDir": "./dist-mcp",
+    "rootDir": "./src"
+  },
+  "include": ["src/mcp/**/*", "src/lib/**/*", "src/types/**/*"],
+  "exclude": ["node_modules", "src/app/**/*", "src/components/**/*"]
+}
