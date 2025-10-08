@@ -64,36 +64,80 @@ export function getCurrentWeekStart(): string {
 }
 
 /**
- * Fetch all release entries for a specific week
+ * Fetch all approved PRs and Linear tickets for a specific week
  */
 export async function fetchReleaseEntriesForWeek(weekStart: string): Promise<ReleaseEntry[]> {
-  const { data, error } = await supabaseAdmin
-    .from('release_entries')
-    .select(`
-      *,
-      pr_summary:pr_summaries(
-        pr_title,
-        pr_url,
-        llm_summary,
-        edited_summary,
-        code_changes
-      ),
-      linear_ticket:linear_tickets(
-        ticket_title,
-        ticket_url,
-        llm_summary,
-        edited_summary
-      )
-    `)
-    .eq('release_week', weekStart)
-    .order('created_at', { ascending: false });
+  const { start, end } = getWeekRange(weekStart);
+  const entries: ReleaseEntry[] = [];
 
-  if (error) {
-    console.error('Error fetching release entries:', error);
-    throw new Error(`Failed to fetch release entries: ${error.message}`);
+  // Fetch approved PR summaries
+  const { data: prSummaries, error: prError } = await supabaseAdmin
+    .from('pr_summaries')
+    .select('*')
+    .eq('status', 'approved')
+    .gte('approved_at', start)
+    .lte('approved_at', end)
+    .order('approved_at', { ascending: false });
+
+  if (prError) {
+    console.error('Error fetching PR summaries:', prError);
+    throw new Error(`Failed to fetch PR summaries: ${prError.message}`);
   }
 
-  return (data || []) as ReleaseEntry[];
+  // Convert PR summaries to release entries format
+  if (prSummaries) {
+    entries.push(...prSummaries.map(pr => ({
+      id: pr.id,
+      pr_summary_id: pr.id,
+      linear_ticket_id: null,
+      release_week: weekStart,
+      doc_pages_updated: [],
+      doc_pr_url: null,
+      doc_pr_merged: false,
+      pr_summary: {
+        pr_title: pr.pr_title,
+        pr_url: pr.pr_url,
+        llm_summary: pr.llm_summary,
+        edited_summary: pr.edited_summary,
+        code_changes: pr.code_changes,
+      },
+    })));
+  }
+
+  // Fetch approved Linear tickets
+  const { data: linearTickets, error: linearError } = await supabaseAdmin
+    .from('linear_tickets')
+    .select('*')
+    .eq('status', 'approved')
+    .gte('approved_at', start)
+    .lte('approved_at', end)
+    .order('approved_at', { ascending: false });
+
+  if (linearError) {
+    console.error('Error fetching Linear tickets:', linearError);
+    throw new Error(`Failed to fetch Linear tickets: ${linearError.message}`);
+  }
+
+  // Convert Linear tickets to release entries format
+  if (linearTickets) {
+    entries.push(...linearTickets.map(ticket => ({
+      id: ticket.id,
+      pr_summary_id: null,
+      linear_ticket_id: ticket.id,
+      release_week: weekStart,
+      doc_pages_updated: [],
+      doc_pr_url: null,
+      doc_pr_merged: false,
+      linear_ticket: {
+        ticket_title: ticket.ticket_title,
+        ticket_url: ticket.ticket_url,
+        llm_summary: ticket.llm_summary,
+        edited_summary: ticket.edited_summary,
+      },
+    })));
+  }
+
+  return entries;
 }
 
 /**
